@@ -2,14 +2,13 @@ import os
 from typing import Dict, List
 
 from openai import OpenAI
-from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from utils.config import (
     OPENAI_API_KEY,
@@ -27,7 +26,7 @@ class ReportService:
     def __init__(self) -> None:
         self.client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
         self.font_name = self._register_korean_font()
-        self.title_style, self.body_style, self.table_note_style = self._build_styles()
+        self.title_style, self.body_style, self.note_style = self._build_styles()
 
     def run(
         self,
@@ -88,8 +87,8 @@ class ReportService:
             spaceAfter=10,
         )
 
-        table_note_style = ParagraphStyle(
-            name="TableNote",
+        note_style = ParagraphStyle(
+            name="ReportNote",
             fontName=self.font_name,
             fontSize=9.5,
             leading=16,
@@ -98,7 +97,7 @@ class ReportService:
             spaceAfter=8,
         )
 
-        return title_style, body_style, table_note_style
+        return title_style, body_style, note_style
 
     def _generate_report_with_llm(
         self,
@@ -136,7 +135,6 @@ Requirements:
 - The report must explicitly acknowledge that TRL 4~6 cannot be directly verified using only public information.
 - When discussing TRL 4~6, explain that the estimate is based on indirect indicators such as patent filing patterns, publication and conference activity changes, hiring keywords, investment signals, and roadmap announcements.
 - Write enough detail for an R&D strategy reader.
-- Do not make the report too short.
 - Prefer paragraph-style explanation with supporting detail rather than only compact summary lines.
 """
 
@@ -210,118 +208,75 @@ Evidence references:
                 content.append(Spacer(1, 10))
                 continue
 
-            # 🔥 REFERENCE 만나기 직전에 TRL 삽입
+            # REFERENCE 직전에 TRL 문단 삽입
             if safe_line.startswith("REFERENCE"):
-                content.append(Spacer(1, 18))
-                content.append(Paragraph("TRL 비교표", self.title_style))
-                content.append(Spacer(1, 10))
+                content.append(Spacer(1, 16))
+                content.append(Paragraph("TRL 비교 요약", self.title_style))
+                content.append(Spacer(1, 8))
 
-                trl_table_data = self._build_trl_table(trl_result)
+                for paragraph in self._build_trl_paragraphs(trl_result):
+                    content.append(Paragraph(paragraph, self.body_style))
+                    content.append(Spacer(1, 6))
 
-                table = Table(
-                    trl_table_data,
-                    colWidths=[35 * mm, 30 * mm, 30 * mm, 30 * mm, 55 * mm],
-                    repeatRows=1,
+                note_text = (
+                    "주: TRL 4~6 구간은 공개 정보만으로 직접 검증하기 어려운 추정 영역이며, "
+                    "특허 출원 패턴, 학회·논문 활동, 채용 키워드, 투자 신호, 로드맵 발표 등 "
+                    "간접 지표를 바탕으로 판단함."
                 )
+                content.append(Paragraph(note_text, self.note_style))
+                content.append(Spacer(1, 12))
 
-                table.setStyle(
-                    TableStyle([
-                        ("FONTNAME", (0, 0), (-1, -1), self.font_name),
-                        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                    ])
-                )
-
-                content.append(table)
-                content.append(Spacer(1, 10))
-
-            # 기존 텍스트 추가
             if safe_line == "SUMMARY":
                 content.append(Paragraph(safe_line, self.title_style))
+            elif safe_line.startswith("REFERENCE"):
+                content.append(Spacer(1, 10))
+                content.append(Paragraph(safe_line, self.title_style))
             elif safe_line.startswith(("1. ", "2. ", "3. ", "4. ")):
+                content.append(Spacer(1, 12))
                 content.append(Paragraph(safe_line, self.title_style))
             else:
                 content.append(Paragraph(safe_line, self.body_style))
 
             content.append(Spacer(1, 6))
 
-        content.append(Spacer(1, 18))
-        content.append(Paragraph("TRL 비교표", self.title_style))
-        content.append(Spacer(1, 10))
-
-        trl_table_data = self._build_trl_table(trl_result)
-
-        table = Table(
-            trl_table_data,
-            colWidths=[35 * mm, 30 * mm, 30 * mm, 30 * mm, 55 * mm],
-            repeatRows=1,
-        )
-
-        table.setStyle(
-            TableStyle(
-                [
-                    ("FONTNAME", (0, 0), (-1, -1), self.font_name),
-                    ("FONTSIZE", (0, 0), (-1, -1), 9),
-                    ("LEADING", (0, 0), (-1, -1), 12),
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-                    ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                    ("ALIGN", (4, 1), (4, -1), "LEFT"),
-                    ("TOPPADDING", (0, 0), (-1, -1), 6),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ]
-            )
-        )
-
-        content.append(table)
-        content.append(Spacer(1, 10))
-
-        note_text = (
-            "주: TRL 4~6 구간은 공개 정보만으로 직접 검증하기 어려운 추정 영역이며, "
-            "특허 출원 패턴, 학회·논문 활동, 채용 키워드, 투자 신호, 로드맵 발표 등 "
-            "간접 지표를 바탕으로 판단함."
-        )
-        content.append(Paragraph(note_text, self.table_note_style))
-
         doc.build(content)
         return file_path
 
-    def _build_trl_table(self, trl_result: Dict) -> List[List[str]]:
-        table_data = [["기술", "SK hynix", "Samsung", "Micron", "비고"]]
-
+    def _build_trl_paragraphs(self, trl_result: Dict) -> List[str]:
+        paragraphs: List[str] = []
         trl_comparison = trl_result.get("trl_comparison", {})
 
         if not trl_comparison:
-            table_data.append(["데이터 없음", "-", "-", "-", "TRL 비교 결과 없음"])
-            return table_data
+            return ["TRL 비교 결과를 생성할 수 있는 충분한 정보가 확보되지 않았다."]
 
-        for tech, data in trl_comparison.items():
+        for technology, data in trl_comparison.items():
             sk = data.get("SK hynix", {})
             samsung = data.get("Samsung", {})
             micron = data.get("Micron", {})
 
-            def fmt(d: Dict) -> str:
-                level = d.get("trl_level", "-")
-                conf = d.get("trl_confidence", 0)
-                try:
-                    conf_text = f"{float(conf):.2f}"
-                except Exception:
-                    conf_text = "0.00"
-                return f"TRL {level}\n(conf. {conf_text})"
+            def fmt_company(name: str, company_data: Dict) -> str:
+                level = company_data.get("trl_level", "-")
+                conf = company_data.get("trl_confidence", 0.0)
+                assessment = company_data.get("assessment", "")
+                return (
+                    f"{name}는 TRL {level} "
+                    f"(confidence {float(conf):.2f}) 수준으로 평가되며, "
+                    f"{assessment}"
+                )
 
-            row = [
-                tech,
-                fmt(sk),
-                fmt(samsung),
-                fmt(micron),
-                data.get("comparison_summary", "")[:80],
-            ]
+            summary = str(data.get("comparison_summary", "")).strip()
 
-            table_data.append(row)
+            paragraph = (
+                f"{technology} 기준으로 보면, "
+                f"{fmt_company('SK hynix', sk)} "
+                f"{fmt_company('Samsung', samsung)} "
+                f"{fmt_company('Micron', micron)} "
+                f"종합적으로는 {summary}"
+            )
 
-        return table_data
+            paragraphs.append(paragraph)
+
+        return paragraphs
 
     def _format_references(self, validated_evidence: List[Dict]) -> str:
         lines = []
