@@ -118,6 +118,7 @@ The report must focus on technology comparison, technology maturity, and threat 
 
 Use the exact structure below:
 
+제목 : SK hynix 기술 전략 분석 보고서
 SUMMARY
 1. 분석 배경
 2. 분석 대상 기술 현황
@@ -209,13 +210,35 @@ Evidence references:
                 content.append(Spacer(1, 10))
                 continue
 
+            # 🔥 REFERENCE 만나기 직전에 TRL 삽입
+            if safe_line.startswith("REFERENCE"):
+                content.append(Spacer(1, 18))
+                content.append(Paragraph("TRL 비교표", self.title_style))
+                content.append(Spacer(1, 10))
+
+                trl_table_data = self._build_trl_table(trl_result)
+
+                table = Table(
+                    trl_table_data,
+                    colWidths=[35 * mm, 30 * mm, 30 * mm, 30 * mm, 55 * mm],
+                    repeatRows=1,
+                )
+
+                table.setStyle(
+                    TableStyle([
+                        ("FONTNAME", (0, 0), (-1, -1), self.font_name),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ])
+                )
+
+                content.append(table)
+                content.append(Spacer(1, 10))
+
+            # 기존 텍스트 추가
             if safe_line == "SUMMARY":
                 content.append(Paragraph(safe_line, self.title_style))
-            elif safe_line.startswith("REFERENCE"):
-                content.append(Spacer(1, 14))
-                content.append(Paragraph(safe_line, self.title_style))
             elif safe_line.startswith(("1. ", "2. ", "3. ", "4. ")):
-                content.append(Spacer(1, 12))
                 content.append(Paragraph(safe_line, self.title_style))
             else:
                 content.append(Paragraph(safe_line, self.body_style))
