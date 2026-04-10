@@ -1,0 +1,198 @@
+[
+  {
+    "id": "qa-direct-001",
+    "question_type": "direct",
+    "query": "Micron의 HBM4 36GB 12H가 HBM3E 대비 제시한 bandwidth 배수와 power efficiency 개선 폭은 무엇이며, 이 제품이 겨냥한 NVIDIA 플랫폼은 무엇인가?",
+    "answer": "Micron HBM4 36GB 12H는 HBM3E 대비 2.3배 수준의 bandwidth와 20% 이상 향상된 power efficiency를 제시하며, NVIDIA Vera Rubin 플랫폼용으로 설계되었다.",
+    "relevant_docs": [
+      "Micron in High-Volume Production of HBM4"
+    ]
+  },
+  {
+    "id": "qa-direct-002",
+    "question_type": "direct",
+    "query": "Micron HBM 세대 비교 표에서 HBM3E와 HBM4의 channel, pseudo-channel, data I/O, nominal bandwidth 항목은 각각 어떻게 달라지는가?",
+    "answer": "Micron HBM 세대 비교에서 HBM3E는 16 channels, 32 pseudo-channels, 1024 data I/O, 1024GB/s nominal bandwidth이고, HBM4는 32 channels, 64 pseudo-channels, 2048 data I/O, 1600GB/s nominal bandwidth로 확장된다.",
+    "relevant_docs": [
+      "Micron_High_Bandwidth_Memory_for_AI"
+    ]
+  },
+  {
+    "id": "qa-direct-003",
+    "question_type": "direct",
+    "query": "Micron LLM fine-tuning 보고서에서 Llama 65B QLoRA 실행 시 HBM utilization이 offloading 대비 어떻게 변화한다고 설명하는가?",
+    "answer": "보고서는 Llama 65B QLoRA에서 HBM utilization이 offloading 실행의 약 20%에서 약 56%로 증가한다고 설명하며, 이 결과를 근거로 Micron HBM3E의 높은 대역폭이 fine-tuning 성능에 유리할 것으로 본다.",
+    "relevant_docs": [
+      "micron-llm-training-engineering-report"
+    ]
+  },
+  {
+    "id": "qa-direct-004",
+    "question_type": "direct",
+    "query": "Samsung HBM4 논문에서 36GB 12-high HBM4 DRAM이 제공하는 I/O 수와 bandwidth는 무엇이며, base die에는 어떤 공정이 사용되는가?",
+    "answer": "Samsung HBM4 DRAM은 2048 I/O와 3.3TB/s bandwidth를 제공하며, base die에는 4nm FinFET logic process가 사용된다.",
+    "relevant_docs": [
+      "Samsung_A_36GB_3.3TB_S_HBM4"
+    ]
+  },
+  {
+    "id": "qa-direct-005",
+    "question_type": "direct",
+    "query": "Samsung HBM4 논문에서 per-channel TSV RDQS timing auto-calibration은 어떤 access delay 문제를 개선하기 위해 도입되었는가?",
+    "answer": "per-channel TSV RDQS timing auto-calibration은 서로 다른 SID 사이의 rank-to-rank access delay, 즉 tCCDR 개선을 위해 도입되었다.",
+    "relevant_docs": [
+      "Samsung_A_36GB_3.3TB_S_HBM4"
+    ]
+  },
+  {
+    "id": "qa-direct-006",
+    "question_type": "direct",
+    "query": "SK hynix HBM3E 논문에서 48GB 16-high HBM3E DRAM의 bandwidth와 TSV area optimization을 위해 제시된 RDQS scheme은 무엇인가?",
+    "answer": "SK hynix HBM3E DRAM은 1280GB/s bandwidth를 달성하며, TSV area optimization을 위해 6-phase RDQS scheme을 제시한다.",
+    "relevant_docs": [
+      "SKHynix_A_48GB_16-High"
+    ]
+  },
+  {
+    "id": "qa-direct-007",
+    "question_type": "direct",
+    "query": "SK hynix 192-Gb 12-high HBM3 DRAM 논문에서 bandwidth와 TSV 관련 보정 방식, layout 최적화 방식은 무엇인가?",
+    "answer": "해당 HBM3 DRAM은 896GB/s bandwidth를 제공하며, TSV auto-calibration scheme과 machine-learning-based layout optimization을 주요 방식으로 사용한다.",
+    "relevant_docs": [
+      "SKHynix_A_192-Gb_12-High"
+    ]
+  },
+  {
+    "id": "qa-direct-008",
+    "question_type": "direct",
+    "query": "CXL 소개 논문에서 PCIe 장치의 non-coherent access가 갖는 한계와 CXL이 제공하는 핵심 semantic은 무엇인가?",
+    "answer": "PCIe 장치는 system memory를 CPU cache hierarchy와 coherently 공유하기 어렵고, device-local cache를 활용한 atomic 또는 locality 기반 접근이 제한된다. CXL은 coherency와 memory semantics를 제공해 프로세서와 장치 간 공유 메모리 접근을 개선한다.",
+    "relevant_docs": [
+      "An Introduction to the Compute Express Link"
+    ]
+  },
+  {
+    "id": "qa-direct-009",
+    "question_type": "direct",
+    "query": "UPMEM real-world PIM 분석 논문에서 평가 대상 PIM 아키텍처는 어떤 두 요소를 같은 칩에 결합하며, 그 처리 코어는 무엇이라고 부르는가?",
+    "answer": "UPMEM PIM 아키텍처는 전통적인 DRAM memory arrays와 general-purpose in-order cores를 같은 칩에 결합하며, 이 코어를 DRAM Processing Units, 즉 DPUs라고 부른다.",
+    "relevant_docs": [
+      "Benchmarking a New Paradigm: An Experimental Analysis"
+    ]
+  },
+  {
+    "id": "qa-direct-010",
+    "question_type": "direct",
+    "query": "Nasdaq SOX 리서치에서 2025년 글로벌 반도체 시장 매출 전망, 2026년 매출 전망, 그리고 2025년 SOX total return은 각각 얼마로 제시되는가?",
+    "answer": "2025년 글로벌 반도체 시장은 22% 성장해 7,720억 달러 매출로 전망되고, 2026년에는 26% 성장해 9,750억 달러에 이를 것으로 제시된다. SOX는 2025년에 43.5% total return을 기록했다고 설명한다.",
+    "relevant_docs": [
+      "202601 Semiconductor Research - SOX"
+    ]
+  },
+  {
+    "id": "qa-infer-001",
+    "question_type": "inference",
+    "query": "Micron HBM4 발표와 Samsung HBM4 논문을 함께 보면, HBM4 경쟁의 핵심이 단순 capacity보다 bandwidth, I/O 확장, 전력 효율로 이동했다고 볼 수 있는 근거는 무엇인가?",
+    "answer": "Micron은 HBM4에서 HBM3E 대비 2.3배 bandwidth와 20% 이상 power efficiency 개선을 강조하고, Samsung은 HBM4에서 2048 I/O와 3.3TB/s bandwidth를 제시한다. 두 자료 모두 capacity 자체뿐 아니라 더 넓은 I/O, 높은 전송률, 전력 효율 개선을 핵심 차별점으로 내세우므로 HBM4 경쟁 축이 시스템 처리량과 효율로 이동했다고 추론할 수 있다.",
+    "relevant_docs": [
+      "Micron in High-Volume Production of HBM4",
+      "Samsung_A_36GB_3.3TB_S_HBM4",
+      "Micron_High_Bandwidth_Memory_for_AI"
+    ]
+  },
+  {
+    "id": "qa-infer-002",
+    "question_type": "inference",
+    "query": "HBM3, HBM3E, HBM4 논문들을 종합할 때 TSV와 RDQS calibration이 세대가 올라갈수록 더 중요해지는 이유를 bandwidth scaling 관점에서 설명하라.",
+    "answer": "HBM3에서 896GB/s, HBM3E에서 1280GB/s, HBM4에서 3.3TB/s로 bandwidth가 증가하면서 stack 내부 TSV 경로와 read strobe timing의 margin 관리가 더 어려워진다. 그래서 HBM3의 TSV auto-calibration, HBM3E의 6-phase RDQS, HBM4의 per-channel TSV RDQS auto-calibration처럼 고속 신호 정렬과 데이터 윈도우 확보 기법이 세대별 핵심 설계로 등장한다.",
+    "relevant_docs": [
+      "SKHynix_A_192-Gb_12-High",
+      "SKHynix_A_48GB_16-High",
+      "Samsung_A_36GB_3.3TB_S_HBM4"
+    ]
+  },
+  {
+    "id": "qa-infer-003",
+    "question_type": "inference",
+    "query": "Micron LLM fine-tuning 보고서와 Micron HBM for AI 문서를 함께 보면, QLoRA 같은 메모리 절감 기법을 사용해도 HBM bandwidth가 여전히 중요한 이유는 무엇인가?",
+    "answer": "QLoRA는 모델 fine-tuning의 용량 부담을 줄일 수 있지만, 실제 실행에서는 weight와 activation 접근이 반복되어 메모리 대역폭 활용률이 증가한다. Micron LLM 보고서는 QLoRA에서 HBM utilization이 높아지는 사례를 제시하고, HBM for AI 문서는 AI 하드웨어에서 bandwidth, power, capacity, RAS가 함께 중요하다고 설명하므로, 메모리 절감 기법 이후에도 bandwidth가 성능 병목을 좌우할 수 있다.",
+    "relevant_docs": [
+      "micron-llm-training-engineering-report",
+      "Micron_High_Bandwidth_Memory_for_AI"
+    ]
+  },
+  {
+    "id": "qa-infer-004",
+    "question_type": "inference",
+    "query": "CXL과 PIM은 모두 데이터 이동 병목을 완화하려는 접근이다. CXL 소개 논문, CXL survey, PIM primer를 근거로 두 기술의 해결 지점이 어떻게 다른지 비교하라.",
+    "answer": "CXL은 processor와 accelerator 또는 memory device 사이에 coherent, low-latency interconnect와 memory semantics를 제공해 메모리 확장, 공유, pooling 문제를 다룬다. PIM은 computation을 memory chip, memory module, logic layer, storage 근처로 옮겨 데이터 자체의 이동량을 줄인다. 따라서 CXL은 장치 간 연결과 메모리 접근 semantics를, PIM은 계산 위치와 데이터 이동량을 주로 해결한다.",
+    "relevant_docs": [
+      "An Introduction to the Compute Express Link",
+      "Next-Gen Computing Systems with Compute Express Link",
+      "A Modern Primer on Processing-In-Memory"
+    ]
+  },
+  {
+    "id": "qa-infer-005",
+    "question_type": "inference",
+    "query": "GDDR6-AiM과 PIM-GPT를 함께 보면, PIM 계열 가속기가 범용 GPU 대체재라기보다 특정 Transformer 연산의 보조 가속기로 적합하다고 판단할 수 있는 이유는 무엇인가?",
+    "answer": "GDDR6-AiM은 matrix-vector product 같은 메모리 집약 연산을 all-bank operation과 확장 DRAM command set으로 가속하는 데 초점을 둔다. PIM-GPT도 autoregressive Transformer의 반복적이고 데이터 이동이 큰 연산을 겨냥한다. 두 자료를 종합하면 PIM은 전체 GPU 기능을 대체하기보다 VMM, GPT inference, memory-bound kernel처럼 데이터 이동 비용이 큰 특정 연산을 오프로드하는 보조 가속기로 적합하다.",
+    "relevant_docs": [
+      "SKHynix_System_Architecture_and_Software_Stack_for_GDDR6",
+      "PIM-GPT: A Hybrid Process-in-Memory Accelerator"
+    ]
+  },
+  {
+    "id": "qa-infer-006",
+    "question_type": "inference",
+    "query": "CXL survey의 memory expansion 논의와 Nasdaq SOX 리서치의 AI memory shortage 전망을 연결하면, CXL memory가 데이터센터에서 관심을 받을 수 있는 이유는 무엇인가?",
+    "answer": "SOX 리서치는 AI 데이터센터 수요로 HBM과 DDR5 중심의 메모리 공급 압박과 가격 상승을 설명한다. CXL survey는 CXL이 memory expansion과 resource pooling을 가능하게 해 CPU-attached memory 한계를 완화한다고 설명한다. 따라서 메모리 공급이 타이트하고 AI 워크로드의 용량 요구가 커질수록, CXL memory는 비용과 확장성 측면에서 데이터센터 대안으로 관심을 받을 수 있다.",
+    "relevant_docs": [
+      "Next-Gen Computing Systems with Compute Express Link",
+      "202601 Semiconductor Research - SOX"
+    ]
+  },
+  {
+    "id": "qa-infer-007",
+    "question_type": "inference",
+    "query": "Samsung Electronics 리포트와 SOX 반도체 리서치를 함께 보면, Samsung의 2026년 실적 전망 상향이 HBM3E/HBM4 기술 로드맵과 어떤 관련이 있다고 볼 수 있는가?",
+    "answer": "SOX 리서치는 AI 인프라 확대로 HBM과 DDR5 수요가 커지고 공급이 tight해졌다고 설명한다. Samsung 리포트는 메모리 수익성 회복, HBM3E 성장, HBM4의 시장 진입 가능성을 근거로 목표주가와 2026년 영업이익 전망을 높인다. 따라서 기술 로드맵상 HBM3E와 HBM4 확보가 AI 메모리 사이클에서 실적 전망을 끌어올리는 핵심 근거로 연결된다.",
+    "relevant_docs": [
+      "Samsung Electronics Rating",
+      "202601 Semiconductor Research - SOX"
+    ]
+  },
+  {
+    "id": "qa-infer-008",
+    "question_type": "inference",
+    "query": "3D DRAM 기술과 HBM stacked memory가 모두 수직 방향 확장을 사용하지만, 해결하려는 병목이 서로 다르다고 볼 수 있는 이유는 무엇인가?",
+    "answer": "HBM stacked memory는 TSV와 다이 적층을 통해 GPU와 AI 가속기에 필요한 system-level bandwidth와 capacity를 높이는 데 초점이 있다. 반면 3D DRAM은 DRAM cell 자체를 3차원 구조로 확장해 장기적인 cell scaling 한계를 넘으려는 기술이다. 즉 HBM은 패키지와 인터페이스 수준의 대역폭 병목을, 3D DRAM은 메모리 셀 집적도와 미세화 한계를 다룬다.",
+    "relevant_docs": [
+      "SKHynix_A_Three_Dimensional_DRAM_3D_DRAM_Technology",
+      "Samsung_A_36GB_3.3TB_S_HBM4",
+      "A Modern Primer on Processing-In-Memory"
+    ]
+  },
+  {
+    "id": "qa-infer-009",
+    "question_type": "inference",
+    "query": "HBM RAS 강화와 CXL coherency 지원은 서로 다른 계층의 신뢰성 문제를 다룬다. Samsung HBM3 논문과 CXL 소개 논문을 근거로 차이를 설명하라.",
+    "answer": "Samsung HBM3 논문의 RAS 강화는 on-die error control처럼 HBM stack 내부의 데이터 오류와 신뢰성 문제를 다룬다. CXL 소개 논문의 coherency 지원은 CPU와 device memory 또는 accelerator가 shared data를 일관되게 접근하도록 하는 시스템 수준의 memory semantics 문제를 다룬다. 따라서 HBM RAS는 메모리 장치 내부 신뢰성, CXL coherency는 이기종 장치 간 일관성 문제에 가깝다.",
+    "relevant_docs": [
+      "Samsung_A_16_GB_1024_GB_s_HBM3",
+      "An Introduction to the Compute Express Link"
+    ]
+  },
+  {
+    "id": "qa-infer-010",
+    "question_type": "inference",
+    "query": "외국 반도체 기업이 한국에 R&D 또는 생산 거점을 검토할 때, HBM/PIM/CXL 기술 자료와 KOTRA 조세가이드를 함께 검색해야 하는 이유를 설명하라.",
+    "answer": "HBM, PIM, CXL 자료는 기술 타당성, 성능 병목, 제품 로드맵을 판단하는 데 필요하다. 하지만 실제 한국 투자는 법인세, 지방세, 공제와 감면, 국세 상담 절차 같은 세무 조건도 함께 검토해야 한다. 따라서 기술 자료는 사업 기회의 기술적 근거를, KOTRA 조세가이드는 투자 실행과 비용 구조의 제도적 근거를 제공한다.",
+    "relevant_docs": [
+      "KOTRA-TAX-26-023",
+      "Micron_High_Bandwidth_Memory_for_AI",
+      "A Modern Primer on Processing-In-Memory",
+      "An Introduction to the Compute Express Link"
+    ]
+  }
+]
