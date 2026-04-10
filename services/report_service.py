@@ -1,4 +1,6 @@
 import os
+import re
+from pathlib import Path
 from typing import Dict, List
 
 from openai import OpenAI
@@ -45,6 +47,8 @@ class ReportService:
             validated_evidence=validated_evidence,
         )
 
+        report_text = self._normalize_report_headers(report_text)
+
         metrics = self._evaluate_report(report_text, validated_evidence)
         pdf_path = self._save_pdf(report_text, trl_result)
 
@@ -56,16 +60,21 @@ class ReportService:
 
     def _register_korean_font(self) -> str:
         font_candidates = [
-            ("AppleGothic", "/System/Library/Fonts/Supplemental/AppleGothic.ttf"),
-            ("ArialUnicodeMS", "/Library/Fonts/Arial Unicode.ttf"),
+            ("MalgunGothic", Path("C:/Windows/Fonts/malgun.ttf")),
+            ("MalgunGothicBold", Path("C:/Windows/Fonts/malgunbd.ttf")),
+            ("Gulim", Path("C:/Windows/Fonts/gulim.ttc")),
+            ("Batang", Path("C:/Windows/Fonts/batang.ttc")),
         ]
 
         for font_name, font_path in font_candidates:
-            if os.path.exists(font_path):
-                pdfmetrics.registerFont(TTFont(font_name, font_path))
+            if font_path.exists():
+                pdfmetrics.registerFont(TTFont(font_name, str(font_path)))
                 return font_name
 
-        raise FileNotFoundError("사용 가능한 한글 폰트를 찾지 못했습니다.")
+        raise FileNotFoundError(
+            "사용 가능한 한글 폰트를 찾지 못했습니다. "
+            "C:/Windows/Fonts 아래의 malgun.ttf 또는 gulim.ttc를 확인하세요."
+        )
 
     def _build_styles(self):
         title_style = ParagraphStyle(
@@ -107,48 +116,48 @@ class ReportService:
         validated_evidence: List[Dict],
     ) -> str:
         evidence_text = self._format_references(validated_evidence)
+        trl_summary_text = "\n".join(self._build_trl_paragraphs(trl_result))
 
         system_prompt = """
-You are an LLM Report Agent for semiconductor technology strategy reporting.
+당신은 반도체 기술 전략 보고서를 작성하는 분석가다.
 
-Write the report in Korean.
-The report must be centered on SK hynix and its competitors.
-The report must focus on technology comparison, technology maturity, and threat level across multiple technology axes.
+반드시 아래 규칙을 지켜라.
+- 보고서 전체를 한국어로만 작성한다.
+- 기술명, 회사명, 제품명, 규격명 같은 고유명사를 제외하면 설명 문장은 한국어로 작성한다.
+- 보고서는 SK hynix 중심의 기술 전략 보고서여야 한다.
+- 경쟁사는 Samsung, Micron 기준으로 비교한다.
+- 기술 비교, 기술 성숙도, 전략적 시사점을 포함한다.
+- 요약은 충분히 자세하게 작성한다.
+- 문장은 보고서 문체로 자연스럽게 작성한다.
+- 불필요한 영어 헤더를 쓰지 않는다.
+- TRL 4~6 구간은 공개 정보만으로 직접 검증하기 어려운 추정 영역임을 반드시 명시한다.
+- TRL 4~6 구간은 특허, 논문, 학회, 채용, 투자, 로드맵 등 간접 지표를 기반으로 해석했음을 반드시 명시한다.
 
-Use the exact structure below:
+반드시 아래 구조를 따른다.
 
-제목 : SK hynix 기술 전략 분석 보고서
-SUMMARY
+제목
+요약
 1. 분석 배경
 2. 분석 대상 기술 현황
 3. 경쟁사 동향 분석
 4. 전략적 시사점
-REFERENCE
-
-Requirements:
-- SUMMARY must be substantial and close to half-page length.
-- Each main section must contain detailed explanation, not short bullets only.
-- Section 2 must explain each technology axis in detail, including technical meaning, importance, implementation direction, and current industry movement.
-- Section 3 must compare SK hynix, Samsung, and Micron in detail for each major technology axis.
-- The report must explicitly compare competitor-specific TRL and threat level.
-- The report must explicitly state that TRL 4~6 is an estimation zone.
-- The report must explicitly acknowledge that TRL 4~6 cannot be directly verified using only public information.
-- When discussing TRL 4~6, explain that the estimate is based on indirect indicators such as patent filing patterns, publication and conference activity changes, hiring keywords, investment signals, and roadmap announcements.
-- Write enough detail for an R&D strategy reader.
-- Prefer paragraph-style explanation with supporting detail rather than only compact summary lines.
-"""
+참고문헌
+""".strip()
 
         user_prompt = f"""
-User query:
+사용자 질의:
 {user_query}
 
-Analysis result:
+분석 결과:
 {analysis_result}
 
-TRL result:
+TRL 결과:
 {trl_result}
 
-Evidence references:
+TRL 비교 요약:
+{trl_summary_text}
+
+참고 자료:
 {evidence_text}
 """
 
@@ -163,14 +172,29 @@ Evidence references:
 
         return response.choices[0].message.content.strip()
 
+    def _normalize_report_headers(self, report_text: str) -> str:
+        text = report_text.strip()
+
+        replacements = {
+            "TITLE": "제목",
+            "SUMMARY": "요약",
+            "REFERENCE": "참고문헌",
+            "REFERENCES": "참고문헌",
+        }
+
+        for src, dst in replacements.items():
+            text = re.sub(rf"^{src}$", dst, text, flags=re.MULTILINE)
+
+        return text
+
     def _evaluate_report(self, report_text: str, validated_evidence: List[Dict]) -> Dict:
         required_sections = [
-            "SUMMARY",
+            "요약",
             "1. 분석 배경",
             "2. 분석 대상 기술 현황",
             "3. 경쟁사 동향 분석",
             "4. 전략적 시사점",
-            "REFERENCE",
+            "참고문헌",
         ]
 
         section_hits = sum(1 for section in required_sections if section in report_text)
@@ -208,8 +232,7 @@ Evidence references:
                 content.append(Spacer(1, 10))
                 continue
 
-            # REFERENCE 직전에 TRL 문단 삽입
-            if safe_line.startswith("REFERENCE"):
+            if safe_line.startswith("참고문헌"):
                 content.append(Spacer(1, 16))
                 content.append(Paragraph("TRL 비교 요약", self.title_style))
                 content.append(Spacer(1, 8))
@@ -221,15 +244,12 @@ Evidence references:
                 note_text = (
                     "주: TRL 4~6 구간은 공개 정보만으로 직접 검증하기 어려운 추정 영역이며, "
                     "특허 출원 패턴, 학회·논문 활동, 채용 키워드, 투자 신호, 로드맵 발표 등 "
-                    "간접 지표를 바탕으로 판단함."
+                    "간접 지표를 바탕으로 판단했다."
                 )
                 content.append(Paragraph(note_text, self.note_style))
                 content.append(Spacer(1, 12))
 
-            if safe_line == "SUMMARY":
-                content.append(Paragraph(safe_line, self.title_style))
-            elif safe_line.startswith("REFERENCE"):
-                content.append(Spacer(1, 10))
+            if safe_line in {"제목", "요약", "참고문헌"}:
                 content.append(Paragraph(safe_line, self.title_style))
             elif safe_line.startswith(("1. ", "2. ", "3. ", "4. ")):
                 content.append(Spacer(1, 12))
@@ -256,15 +276,26 @@ Evidence references:
 
             def fmt_company(name: str, company_data: Dict) -> str:
                 level = company_data.get("trl_level", "-")
-                conf = company_data.get("trl_confidence", 0.0)
-                assessment = company_data.get("assessment", "")
+                conf = float(company_data.get("trl_confidence", 0.0))
+                assessment = self._to_korean_assessment(company_data.get("assessment", ""))
+                signals = company_data.get("indirect_signals_used", [])
+                citations = company_data.get("citations", [])
+
+                signal_text = ""
+                if signals:
+                    signal_text = f" 주요 신호로는 {', '.join(map(str, signals[:3]))} 등이 확인된다."
+
+                citation_text = ""
+                if citations:
+                    citation_text = f" 근거 자료는 {', '.join(map(str, citations[:2]))} 등을 참고했다."
+
                 return (
                     f"{name}는 TRL {level} "
-                    f"(confidence {float(conf):.2f}) 수준으로 평가되며, "
-                    f"{assessment}"
+                    f"(신뢰도 {conf:.2f}) 수준으로 평가되며, "
+                    f"{assessment}{signal_text}{citation_text}"
                 )
 
-            summary = str(data.get("comparison_summary", "")).strip()
+            summary = self._to_korean_summary(str(data.get("comparison_summary", "")).strip())
 
             paragraph = (
                 f"{technology} 기준으로 보면, "
@@ -277,6 +308,52 @@ Evidence references:
             paragraphs.append(paragraph)
 
         return paragraphs
+
+    def _to_korean_assessment(self, text: str) -> str:
+        clean = str(text).strip()
+
+        if not clean:
+            return "공개 자료 기준으로 기술 성숙도를 판단할 수 있는 근거가 제한적이다."
+
+        if re.search(r"[A-Za-z]{4,}", clean):
+            return self._translate_to_korean(clean)
+
+        return clean
+
+    def _to_korean_summary(self, text: str) -> str:
+        clean = str(text).strip()
+
+        if not clean:
+            return "공개 근거상 뚜렷한 우위를 단정하기 어렵다."
+
+        if re.search(r"[A-Za-z]{4,}", clean):
+            return self._translate_to_korean(clean)
+
+        return clean
+
+    def _translate_to_korean(self, text: str) -> str:
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4.1-mini",
+                temperature=0.2,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "다음 문장을 반도체 기술 전략 보고서 문체의 자연스러운 한국어로 바꿔라. "
+                            "직역하지 말고 의미를 유지하면서 매끄럽게 정리하라. "
+                            "회사명, 기술명, 제품명은 원문 표기를 유지할 수 있다."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": text[:1500],
+                    },
+                ],
+            )
+            return response.choices[0].message.content.strip()
+        except Exception:
+            return "기술 성숙도 판단을 위한 근거가 일부 확인되나 추가 검증이 필요하다."
 
     def _format_references(self, validated_evidence: List[Dict]) -> str:
         lines = []

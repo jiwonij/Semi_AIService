@@ -2,6 +2,7 @@ python-dotenv
 openai
 langgraph
 langchain-community
+langchain-openai
 langchain-text-splitters
 langchain-huggingface
 faiss-cpu
